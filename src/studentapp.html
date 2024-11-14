@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timelock Student Dashboard</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.2.7-rc.0/web3.min.js"></script>
+
+    <style>
+        body {
+            background-image: url('images/background2.jpg');
+    		background-size: cover;
+    		background-position: center;
+    		background-repeat: no-repeat;
+			background-attachment: fixed;
+            font-family: Arial, sans-serif;
+            padding: 0;
+            margin: 0;
+        }
+        h1 {
+            color: #333;
+			background-color: white;
+            text-align: center;
+            padding: 20px 0;
+			margin: 0;
+        }
+
+	/* Navigation Bar Styles */
+        nav {
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav-left {
+            color: #f2f2f2;
+            font-size: 20px;
+            font-weight: bold;
+            position: absolute;
+            left: 20px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-links a {
+            color: #f2f2f2;
+            text-align: center;
+            padding: 14px 20px;
+            text-decoration: none;
+            font-size: 17px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .nav-links a:hover {
+            background-color: #575757;
+            color: white;
+        }
+
+
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+        }
+        .section {
+            margin: 20px 0;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+		.top-right {
+    		position: absolute; /* Position it absolutely */
+    		top: 140px; /* Distance from the top */
+    		right: 5px; /* Distance from the right */
+			width: 250px;
+		}
+
+        button {
+            background-color: #d3f1e7;
+            color: #333;
+            font-size: 18px;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #92cdf5;
+        }
+        #balanceArea, #transactionsArea {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #333;
+        }
+	input, select {
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 300px;
+        }
+        label {
+            font-size: 16px;
+            display: block;
+            margin: 10px 0 5px;
+            text-align: left;
+        }
+		span {
+    		word-wrap: break-word; /* Allow text to wrap */
+		}
+
+		#requestsTable, #transactionsTable {
+			width: 100%;
+			border-collapse: collapse; /* Ensures borders are collapsed into a single border */
+			margin-top: 20px;          /* Adds space above the table */
+		}
+
+		#requestsTable th, #requestsTable td, #transactionsTable th, #transactionsTable td {
+			border: 1px solid #ddd;    /* Adds borders to table cells */
+			padding: 8px;              /* Adds padding inside cells */
+			text-align: left;          /* Aligns text to the left */
+		}
+
+		#requestsTable th, #transactionsTable th {
+			background-color: #f2f2f2; /* Light gray background for header */
+			color: #333;               /* Dark text for header */
+		}
+
+		#requestsTable tr:nth-child(even) , #transactionsTable tr:nth-child(even){
+			background-color: #f9f9f9; /* Zebra stripe for even rows */
+		}
+
+		#requestsTable tr:hover, #transactionsTable tr:hover {
+			background-color: #f1f1f1; /* Change background on hover */
+		}
+
+		#requestsTable td, #transactionsTable td {
+			word-wrap: break-word;     /* Prevents overflow by breaking long words */
+			max-width: 150px;          /* Set a maximum width for table cells */
+			font-size: 14px;           /* Set the font size for table cells */
+		}
+
+		#requestsTable th, #transactionsTable th {
+			font-size: 16px;           /* Optionally, set a different font size for header */
+		}
+
+		#viewChildRequest {
+			text-align: center;            /* Center the text in the div */
+			margin: 10px auto;               /* Center the div itself */
+			             /* Set a max width for better alignment */
+		}
+
+		#viewChildRequest h2, #transaction h2, #balanceSection h2{
+			text-align: center;
+		}
+
+		#queueTransaction, #transaction, #balanceSection {
+			text-align: center;            /* Center the text in the div */
+			margin: 10px auto;               /* Center the div itself */
+			             /* Set a max width for better alignment */
+		}
+
+		#queueTransaction label,
+		#queueTransaction input,
+		#queueTransaction select,
+		#queueTransaction button,
+		#transaction button {
+			display: block;                /* Make elements block-level for stacking */
+			margin: 10px auto;            /* Add margin for spacing */
+			width: 80%;                   /* Set width to 80% for inputs and buttons */
+			max-width: 300px;             /* Set a max width for inputs and buttons */
+		}
+
+		#balanceSection button {
+			display: block;                /* Make elements block-level for stacking */
+			margin: 10px auto;            /* Add margin for spacing */
+			width: 80%;                   /* Set width to 80% for inputs and buttons */
+			max-width: 300px;             /* Set a max width for inputs and buttons */
+		}	
+
+        #cancelRequest {
+			text-align: center;            /* Center the text in the div */
+			margin: 10px auto;               /* Center the div itself */
+			             /* Set a max width for better alignment */
+		}
+
+		#cancelRequest label,
+		#cancelRequest input,
+		#cancelRequest button {
+			display: block;                /* Make elements block-level for stacking */
+			margin: 10px auto;            /* Add margin for spacing */
+			width: 80%;                   /* Set width to 80% for inputs and buttons */
+			max-width: 300px;             /* Set a max width for inputs and buttons */
+		}
+
+    </style>
+</head>
+<body>
+    <h1><i>UltraZone</i> Parental Allowance DApp</h1>
+    
+    <nav>
+        <div class="nav-left">Student</div>
+        <div class="nav-links">
+            <a href="#balanceSection">My Current Balance</a>
+            <a href="#transaction">Transaction History</a>
+            <a href="#queueTransaction">Request Funds</a>
+            <a href="#cancelRequest">Cancel Request</a>
+            <a href="#viewChildRequest">View My Requests</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Connect Metamask Section -->
+        <div class="section top-right">
+            <button onclick="connectMetamask()">Connect Metamask</button>
+			<!-- <button onclick="clearConnectSection()">Clear</button> Clear Button Added -->
+            <span id="accountArea"></span>
+            <br>
+			<br/>
+
+            <button onclick="connectToContract()">Connect to Smart Contract</button>
+			<!-- <button onclick="clearConnectSection()">Clear</button> Clear Button Added -->
+            <span id="contractArea"></span>
+            <br>
+            <br/>
+            <button onclick="goLogOut()">Log Out</button>
+        </div>
+
+	    <!-- Current Balance Section -->
+	    <div class="section" id="balanceSection">
+    	    <h2>My Current Balance</h2>
+            <p id="balanceArea" ><b>Current Balance: </b></p>
+            <button onclick="getBalance()">Check</button> 
+	    </div>
+
+
+        <!-- View Transactions Section -->
+        <div class="section" id="transaction">
+            <h2>Transaction History</h2>            
+            <div id="transactionsArea">
+                <!-- Transactions Table -->
+        		<table id="transactionsTable">
+            		<thead>
+                		<tr>
+                    		<th>Transaction ID</th>
+                    		<th>Target</th>
+                    		<th>Amount</th>
+                    		<th>Release Time</th>
+                    		<th>Status</th>
+                		</tr>
+            		</thead>
+            		<tbody>
+            		</tbody>
+        		</table>
+            </div>
+			<button id="viewAllTransactions" onclick="viewAllTransactions()">View All Transactions</button>
+			<button id="clearRequests" onclick="clearViewTransactions()">Clear</button> <!-- Clear Button Added -->
+        </div>
+
+		
+
+	    <div class="section" id="queueTransaction">
+            <h2>Request Funds</h2>
+            <label for="childAddress">My Wallet Address:</label>
+            <input type="text" id="childAddress" name="childAddress">
+
+            <label for="amount">Allowance Amount:</label>
+            <input type="number" id="amount" name="amount">
+
+            <label for="currency">Currency:</label>
+            <select id="currency" name="currency">
+                <option value="wei">Wei</option>
+                <option value="ether">Ether</option>
+                <!-- Add more currencies as needed -->
+            </select>
+
+            <label for="releaseTime">Release Time:</label>
+            <input type="datetime-local" id="releaseTime" name="releaseTime">
+            <div id="releaseTimeEpoch" class="epoch-display"></div>
+
+            <button id="setAllowance" onclick="setAllowance()">Request</button>
+			<button id="clearQueue" onclick="clearQueueTransaction()">Clear</button> <!-- Clear Button Added -->
+        </div>
+
+        <!-- Cancel Transaction Section -->
+        <div class="section" id="cancelRequest">
+            <h2>Cancel Request</h2>
+            <label for="cancelTxId">Request Number:</label>
+            <input type="text" id="cancelTxId" name="cancelTxId">
+
+            <button id="cancelTransactionButton" onclick="cancelRequest()">Cancel Request</button>
+			<button id="clearCancel" onclick="clearCancelRequest()">Clear</button> <!-- Clear Button Added -->
+
+            <p id="cancelStatus"></p>
+        </div>
+
+
+
+        <!-- View Student Requests Section -->
+		<div class="section" id="viewChildRequest">
+			<h2>View My Requests</h2>
+			<div id="studentRequests">
+				<!-- Student requests will be displayed here -->
+				<table id="requestsTable" style="width: 100%; border-collapse: collapse;">
+					<thead>
+						<tr>
+							<th>Request ID</th>
+							<th>Address</th>
+							<th>Amount (Ether)</th>
+							<th>Release Time</th>
+                            <th>Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						<!-- Rows will be added here -->
+					</tbody>
+				</table>
+			</div>
+			<br>
+			<button id="viewRequestsButton" onclick="viewStudentRequests()">View Requests</button>
+			<button id="clearRequests" onclick="clearViewRequests()">Clear</button> <!-- Clear Button Added -->
+		</div>
+
+
+
+    </div>
+    
+    
+    
+
+	<script src="/js/timelockconnect.js"></script>
+    <script>
+        let account;
+
+        async function init() {
+            if (typeof window.ethereum !== 'undefined') {
+                web3 = new Web3(window.ethereum);
+                await ethereum.request({ method: 'eth_requestAccounts' });
+                contract = new web3.eth.Contract(contractABI, contractAddress);
+                console.log('MetaMask connected');
+            } else {
+                alert('Please install MetaMask to use this feature.');
+            }
+        }
+
+        // Connect to Metamask
+        const connectMetamask = async () => {
+            if (window.ethereum) {
+                try {
+                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+                    account = accounts[0];
+                    document.getElementById("accountArea").innerHTML = "<b>Account: </b>" + account;
+                    getBalance();
+					document.getElementById("childAddress").value = account;
+                } catch (error) {
+                    console.error(error);
+                    alert("Failed to connect to Metamask.");
+                }
+            } else {
+                alert("Please install Metamask to use this DApp.");
+            }
+        }
+
+        // 2- Connect to Smart Contract
+        const connectToContract = async () => {
+            if (window.ethereum) {
+                try {
+                    await window.ethereum.request({ method: "eth_requestAccounts" });
+                    window.web3 = new Web3(window.ethereum);
+                    window.contract = new window.web3.eth.Contract(contractABI, contractAddress);
+                    const accounts = await window.web3.eth.getAccounts();
+                    account = accounts[0];
+                    document.getElementById("contractArea").innerHTML = "<b>Connected!</b>";
+                } catch (error) {
+                    console.error(error);
+                    alert("Failed to connect to Metamask.");
+                }
+            } else {
+                alert("Please install Metamask to use this DApp.");
+            }
+        }
+
+		
+
+
+
+        // Get current balance
+        const getBalance = async () => {
+            if (account) {
+                const balanceWei = await window.web3.eth.getBalance(account);
+                const balance = window.web3.utils.fromWei(balanceWei, 'ether');
+                document.getElementById("balanceArea").innerHTML = "<b>Current Balance: </b>" + balance + " Ether";
+            } else {
+				alert("Please connect to your Metamask wallet and the smart contract.");
+			}
+        }
+
+        // 3- Set Allowance (Queue Transaction)
+        const setAllowance = async () => {
+            const childAddress = document.getElementById("childAddress").value;
+            const amount = document.getElementById("amount").value;
+            const releaseTimeInput = document.getElementById("releaseTime").value;
+            const selectedCurrency = document.getElementById("currency").value;
+
+            if (!childAddress || !amount || !releaseTimeInput) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+			// Validate the child's wallet address using Web3.js
+			if (!window.web3.utils.isAddress(childAddress)) {
+        		alert("Invalid Ethereum address. Please enter a valid wallet address.");
+        		return;
+    		}
+
+            const releaseTimeEpoch = Math.floor(new Date(releaseTimeInput).getTime() / 1000);
+
+            let amountInWei;
+
+            // Convert amount to wei based on selected currency
+            if (selectedCurrency === 'ether') {
+                amountInWei = window.web3.utils.toWei(amount, 'ether');
+            } else {
+                amountInWei = amount; // already in wei
+            }
+
+            try {
+                const receipt = await window.contract.methods.createRequest(childAddress, amountInWei, releaseTimeEpoch).send({ from: account});
+                const requestID = receipt.events.RequestSent.returnValues.requestNo;
+                alert("Request sent: " + requestID);
+            } catch (error) {
+                console.error(error);
+                alert("An error occurred while setting the allowance.");
+            }
+        }
+
+        const goLogOut = async () => {
+            window.location.href = 'login';
+        }
+
+        
+       
+
+
+		const viewStudentRequests = async () => {
+			try {
+				// Call the iterateRequests function from the smart contract
+				const requests = await window.contract.methods.iterateRequests().call();
+				
+				// Debugging: Log the entire requests object to understand its structure
+				console.log("Iterate Requests Output:", requests);
+				
+				// Access the returned arrays via indices
+				const ids = requests[0];
+				const studentAddresses = requests[1]; 
+				const timestamps = requests[2]; 
+				const amounts = requests[3]; 
+                const statuses = requests[4];
+
+				let html = ''; // Start with an empty string for table rows
+
+				for (let i = 0; i < ids.length; i++) {
+					if (studentAddresses[i] == account) {
+						// Convert amount from Wei to Ether for readability
+						const amountInEther = window.web3.utils.fromWei(amounts[i], 'ether');
+						
+						// Convert timestamp to a human-readable date format
+						const releaseDate = new Date(timestamps[i] * 1000).toLocaleString();
+
+                        let status;
+                        if (statuses[i] == true) {
+                            status = "Active";
+                        } else {
+                            status = "Inactive";
+                        }
+						
+						// Build the table row for each request
+						html += `<tr>
+									<td>${ids[i]}</td>
+									<td>${studentAddresses[i]}</td>
+									<td>${amountInEther}</td>
+									<td>${releaseDate} (Epoch: ${timestamps[i]})</td>
+                                    <td>${status}</td>
+								</tr>`;
+					}					
+				}
+
+				// Insert the rows into the table body
+				document.querySelector("#requestsTable tbody").innerHTML = html;
+
+			} catch (error) {
+				console.error("Error fetching student requests:", error);
+				alert("An error occurred while fetching student requests. Please ensure you have connected to your Metamask wallet and the smart contract.");
+			}
+		};
+
+
+
+		const clearCancelRequest = () => {
+            document.getElementById("cancelTxId").value = "";
+            document.getElementById("cancelStatus").innerText = "";
+        }
+
+
+
+
+
+        // Clear View Student Requests Section
+        const clearViewRequests = () => {
+    	// Clear the table body
+    		const tableBody = document.getElementById("requestsTable").getElementsByTagName("tbody")[0];
+    		tableBody.innerHTML = ''; // Clear all rows in the tbody
+		};
+
+        const clearViewTransactions = () => {
+    	// Clear the table body
+    		const tableBody = document.getElementById("transactionsTable").getElementsByTagName("tbody")[0];
+    		tableBody.innerHTML = ''; // Clear all rows in the tbody
+		};
+
+        // View All Transactions
+        const viewAllTransactions = async () => {
+            try {
+                const transactions = await window.contract.methods.iterateTransactions().call();
+                
+                const keys = transactions._keys;
+                const targets = transactions.targets;
+                const values = transactions.values;
+                const timestamps = transactions.timestamps;
+                const statuses = transactions.queuedStatuses;
+
+                let html = '';
+
+                keys.forEach((key, index) => {
+                    let target = targets[index];
+
+					// Only display transactions where the target matches the current account
+					if (target.toLowerCase() === account.toLowerCase()) {
+						let amount = window.web3.utils.fromWei(values[index], 'ether');
+                    	let releaseTimeDate = new Date(timestamps[index] * 1000).toLocaleString();
+                    	let status;
+
+						switch (statuses[index]) {
+							case "1":
+								status = "Queued";
+								break;
+							case "2":
+								status = "Executed";
+								break;
+							case "3":
+								status = "Cancelled";
+								break;
+							default:
+								status = "Unknown";
+						}
+
+                        html += `<tr>
+                            	<td>${key}</td>
+                            	<td>${target}</td>
+                            	<td>${amount} Ether</td>
+                            	<td>${releaseTimeDate} (Epoch: ${timestamps[index]})</td>
+                            	<td>${status}</td>
+                        	</tr>`;
+					}                    
+                });
+
+                // Insert the generated rows into the table body
+            	document.querySelector("#transactionsTable tbody").innerHTML = html;
+            } catch (error) {
+                console.error(error);
+                alert("An error occurred while fetching transactions. Please ensure you have connected to your Metamask wallet and the smart contract.");
+            }
+        };
+
+
+        const cancelRequest = async () => {
+            const txId = document.getElementById("cancelTxId").value;
+
+            if (!txId) {
+                alert("Please enter the Request Number.");
+                return;
+            }
+
+            try {
+                await window.contract.methods.cancelRequest(txId).send({ from: account });
+                document.getElementById("cancelStatus").innerText = "Request has been canceled successfully!";
+            } catch (error) {
+                console.error(error);
+                // alert("An error occurred while canceling the transaction.");
+				// Display detailed error message if available
+				let errorMessage = "An error occurred while canceling the request.";       
+        		document.getElementById("cancelStatus").innerText = `Error: ${errorMessage}`;
+        		alert(`Error: ${errorMessage}: Transaction is not in the queue!`);
+            }
+        }
+
+        // Clear Cancel Transaction Section
+        const clearCancelTransaction = () => {
+            document.getElementById("cancelTxId").value = "";
+            document.getElementById("cancelStatus").innerText = "";
+        }
+
+
+
+
+        window.onload = init;
+    </script>
+</body>
+</html>

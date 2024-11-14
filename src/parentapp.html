@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timelock Parental Allowance DApp</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.2.7-rc.0/web3.min.js"></script>
+    
+    <style>
+        body {
+			background-image: url('images/background2.jpg');
+    		background-size: cover;
+    		background-position: center;
+    		background-repeat: no-repeat;
+			background-attachment: fixed;
+            font-family: Arial, sans-serif;
+            padding: 0;
+            margin: 0;
+        }
+        h1 {
+            color: #333;
+			background-color: white;
+            text-align: center;
+            padding: 20px 0;
+			margin: 0;
+        }
+        /* Navigation Bar Styles */
+        nav {
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav-left {
+            color: #f2f2f2;
+            font-size: 20px;
+            font-weight: bold;
+            position: absolute;
+            left: 20px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-links a {
+            color: #f2f2f2;
+            text-align: center;
+            padding: 14px 20px;
+            text-decoration: none;
+            font-size: 17px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .nav-links a:hover {
+            background-color: #575757;
+            color: white;
+        }
+
+		.top-right {
+    		position: absolute; /* Position it absolutely */
+    		top: 140px; /* Distance from the top */
+    		right: 5px; /* Distance from the right */
+			width: 250px;
+		}
+
+        /* Container Styles */
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+        }
+        .section {
+            margin: 20px 0;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+		
+		/* Form Elements Styles */
+        button {
+            background-color: #d3f1e7;
+            color: #333;
+            font-size: 18px;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            /*margin: 10px 5px 10px 0;*/
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #92cdf5;
+        }
+        input, select {
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 300px;
+        }
+        label {
+            font-size: 16px;
+            display: block;
+            margin: 10px 0 5px;
+            text-align: left;
+        }
+        /* Account and Contract Areas */
+        /* #accountArea, #contractArea {
+            margin: 0;
+			padding: 0;
+            font-size: 10px;
+            color: #333;
+			max-width: 250px;
+        }  */
+        /* Epoch Timestamp Display */
+        .epoch-display {
+            font-size: 14px;
+            color: #555;
+            margin-top: 5px;
+        }
+        /* Responsive Navigation */
+        @media (max-width: 600px) {
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+            }
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+            }
+            .nav-left {
+                position: static;
+                margin-bottom: 10px;
+            }
+        }
+		span {
+    		word-wrap: break-word; /* Allow text to wrap */
+		}
+
+		#requestsTable, #allTransactions {
+			width: 100%;
+			border-collapse: collapse; /* Ensures borders are collapsed into a single border */
+			margin-top: 20px;          /* Adds space above the table */
+		}
+
+		
+
+		#requestsTable th, #requestsTable td, #allTransactions th, #allTransactions td {
+			border: 1px solid #ddd;    /* Adds borders to table cells */
+			padding: 8px;              /* Adds padding inside cells */
+			text-align: left;          /* Aligns text to the left */
+		}
+
+		#requestsTable th, #allTransactions th {
+			background-color: #f2f2f2; /* Light gray background for header */
+			color: #333;               /* Dark text for header */
+		}
+
+		#requestsTable tr:nth-child(even), #allTransactions tr:nth-child(even) {
+			background-color: #f9f9f9; /* Zebra stripe for even rows */
+		}
+
+		#requestsTable tr:hover , #allTransactions tr:hover{
+			background-color: #f1f1f1; /* Change background on hover */
+		}
+
+		#requestsTable td, #allTransactions td {
+			word-wrap: break-word;     /* Prevents overflow by breaking long words */
+			max-width: 150px;          /* Set a maximum width for table cells */
+			font-size: 14px;           /* Set the font size for table cells */
+		}
+
+		#requestsTable th, #allTransactions th {
+			font-size: 16px;           /* Optionally, set a different font size for header */
+		}
+
+		#queueTransaction {
+			text-align: center;            /* Center the text in the div */
+			margin: 10px auto;               /* Center the div itself */
+			             /* Set a max width for better alignment */
+		}
+
+		#queueTransaction label,
+		#queueTransaction input,
+		#queueTransaction select,
+		#queueTransaction button {
+			display: block;                /* Make elements block-level for stacking */
+			margin: 10px auto;            /* Add margin for spacing */
+			width: 80%;                   /* Set width to 80% for inputs and buttons */
+			max-width: 300px;             /* Set a max width for inputs and buttons */
+		}
+
+		#modifyTransaction {
+			text-align: center;            /* Center the text in the div */
+			margin: 10px auto;               /* Center the div itself */
+			            /* Set a max width for better alignment */
+		}
+
+		#modifyTransaction label,
+		#modifyTransaction input,
+		#modifyTransaction select,
+		#modifyTransaction button {
+			display: block;                /* Make elements block-level for stacking */
+			margin: 10px auto;            /* Add margin for spacing */
+			width: 80%;                   /* Set width to 80% for inputs and buttons */
+			max-width: 300px;             /* Set a max width for inputs and buttons */
+		}
+
+		#modifyTransactionDetails {
+			text-align: left;             /* Align the modify transaction details to the left */
+			margin-top: 20px;             /* Add space above the modify transaction details */
+		}
+
+		#modifyTransactionDetails h3 {
+			text-align: center
+		}
+
+		#cancelTransaction, #viewTransactions, #viewChildRequest, #executeTransaction {
+			text-align: center;            /* Center the text in the div */
+			margin: 10px auto;               /* Center the div itself */
+			             /* Set a max width for better alignment */
+		}
+
+		#cancelTransaction label,
+		#cancelTransaction input,
+		#cancelTransaction button,
+        #executeTransaction label,
+        #executeTransaction input,
+        #executeTransaction button {
+			display: block;                /* Make elements block-level for stacking */
+			margin: 10px auto;            /* Add margin for spacing */
+			width: 80%;                   /* Set width to 80% for inputs and buttons */
+			max-width: 300px;             /* Set a max width for inputs and buttons */
+		}
+
+		#viewTransactions h2,  #viewChildRequest h2{
+			text-align: center;
+		}
+
+		#viewTransactions button {
+			display: block;                /* Make elements block-level for stacking */
+			margin: 10px auto;            /* Add margin for spacing */
+			width: 80%;                   /* Set width to 80% for inputs and buttons */
+			max-width: 300px;             /* Set a max width for inputs and buttons */
+		}
+
+		#transactionDetails {
+			display: none;
+		}
+
+		#transactionDetails table {
+			width: 100%;
+			border-collapse: collapse;
+			font-family: Arial, sans-serif;
+			margin-top: 20px;
+		}
+
+		#transactionDetails th, #transactionDetails td {
+			border: 1px solid #ddd;
+			padding: 12px 15px;
+			text-align: left;
+		}
+
+		#transactionDetails th {
+			background-color: #f4f4f4;
+			font-weight: bold;
+			color: #333;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+		}
+
+		#transactionDetails tbody tr:nth-child(even) {
+			background-color: #f9f9f9;
+		}
+
+		#transactionDetails tbody tr:hover {
+			background-color: #f1f1f1;
+		}
+
+		#transactionDetails tbody td {
+			color: #666;
+		}
+
+		#transactionDetails tbody tr {
+			transition: background-color 0.3s ease;
+		}
+
+		#transactionDetails caption {
+			caption-side: top;
+			font-size: 18px;
+			font-weight: bold;
+			color: #444;
+			margin-bottom: 10px;
+			text-align: left;
+		}
+
+		#transactionDetails table {
+			box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+			border-radius: 5px;
+			overflow: hidden;
+		}
+
+
+		
+
+
+
+
+
+    </style>
+</head>
+<body>
+    <h1><i>UltraZone</i> Parental Allowance DApp</h1>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-left">Parent</div>
+        <div class="nav-links">
+            <a href="#queueTransaction">Schedule Transaction</a>
+            <a href="#modifyTransaction">Modify Transaction</a>
+            <a href="#cancelTransaction">Cancel Transaction</a>
+            <a href="#viewTransactions">View Transactions</a>
+			<a href="#viewChildRequest">View Child Requests</a>
+			<a href="parentAnalytics">Transaction Analytics</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Connect Metamask and Contract Section -->
+        <div class="section top-right">
+            <button onclick="connectMetamask()">Connect Metamask</button>
+			<!-- <button onclick="clearConnectSection()">Clear</button> Clear Button Added -->
+            <!-- <p id="accountArea"></p> -->
+			<span id="accountArea"></span>
+			<br/>
+            <br>
+
+            <button onclick="connectToContract()">Connect to Smart Contract</button>
+			<!-- <button onclick="clearConnectSection()">Clear</button> Clear Button Added -->
+            <!-- <p id="contractArea"></p> -->
+			<span id="contractArea"></span>
+            <br/>
+            <br/>
+            <button onclick="goLogOut()">Log Out</button>
+        </div>
+
+        <!-- Queue Transaction Section -->
+        <div class="section" id="queueTransaction">
+            <h2>Schedule Transaction</h2>
+            <label for="childAddress">Child's Wallet Address:</label>
+            <input type="text" id="childAddress" name="childAddress">
+
+            <label for="amount">Allowance Amount:</label>
+            <input type="number" id="amount" name="amount">
+
+            <label for="currency">Currency:</label>
+            <select id="currency" name="currency">
+                <option value="wei">Wei</option>
+                <option value="ether">Ether</option>
+                <!-- Add more currencies as needed -->
+            </select>
+
+            <label for="releaseTime">Release Time:</label>
+            <input type="datetime-local" id="releaseTime" name="releaseTime">
+            <div id="releaseTimeEpoch" class="epoch-display"></div>
+
+            <button id="setAllowance" onclick="setAllowance()">Set Allowance</button>
+			<button id="clearQueue" onclick="clearQueueTransaction()">Clear</button> <!-- Clear Button Added -->
+        </div>
+
+        <!-- Modify Transaction Section -->
+        <div class="section" id="modifyTransaction">
+            <h2>Modify Transaction</h2>
+            <label for="findTxId">Transaction ID:</label>
+            <input type="text" id="findTxId" name="findTxId">
+
+            <button id="findTransaction" onclick="findTransaction()">Find Transaction</button>
+			<button id="clearFindTransaction" onclick="clearModifyTransaction()">Clear</button> <!-- Clear Button Added -->
+
+            
+			<div id="transactionDetails">
+				<table style="width: 100%; border-collapse: collapse;">
+					<thead>
+						<tr>
+							<th>Field</th>
+							<th>Value</th>
+						</tr>
+					</thead>
+					<tbody>
+						<!-- Transaction details will be displayed here -->
+					</tbody>
+				</table>
+			</div>
+			
+
+            <div id="modifyTransactionDetails" style="display:none;">
+                <h3>Please modify the necessary details below:</h3>
+                <label for="modifyTxId">Transaction ID:</label>
+                <input type="text" id="modifyTxId" name="modifyTxId" readonly>
+
+                <label for="modifyTarget">New Target Address:</label>
+                <input type="text" id="modifyTarget" name="modifyTarget">
+
+                <label for="modifyAmount">New Allowance Amount:</label>
+                <input type="number" id="modifyAmount" name="modifyAmount">
+
+                <label for="modifyCurrency">Currency:</label>
+                <select id="modifyCurrency" name="modifyCurrency">
+                    <option value="wei">Wei</option>
+                    <option value="ether">Ether</option>
+                    <!-- Add more currencies as needed -->
+                </select>
+
+                <label for="modifyReleaseTime">New Release Time:</label>
+                <input type="datetime-local" id="modifyReleaseTime" name="modifyReleaseTime">
+                <div id="modifyReleaseTimeEpoch" class="epoch-display"></div>
+
+                <button id="updateTransaction" onclick="modifyTransaction()">Update Transaction</button>
+				<button id="clearModify" onclick="clearModifyTransaction()">Clear</button> <!-- Clear Button Added -->
+            </div>
+        </div>
+
+        <!-- Execute Transaction Section -->
+        <div class="section" id="executeTransaction">
+            <h2>Execute Transaction</h2>
+            <label for="executeTxId">Transaction ID:</label>
+            <input type="text" id="executeTxId" name="executeTxId">
+
+            <label for="executeLatestTime">Latest Time:</label>
+            <input type="datetime-local" id="executeLatestTime" name="executeLatestTime">
+            <div id="executeLatestTimeEpoch" class="epoch-display"></div>
+
+            <button id="executeTransactionButton" onclick="executeTransaction()">Execute Transaction</button>
+			<button id="clearExecute" onclick="clearExecuteTransaction()">Clear</button> <!-- Clear Button Added -->
+        </div>
+
+
+
+        <!-- Cancel Transaction Section -->
+        <div class="section" id="cancelTransaction">
+            <h2>Cancel Transaction</h2>
+            <label for="cancelTxId">Transaction ID:</label>
+            <input type="text" id="cancelTxId" name="cancelTxId">
+
+            <button id="cancelTransactionButton" onclick="cancelTransaction()">Cancel Transaction</button>
+			<button id="clearCancel" onclick="clearCancelTransaction()">Clear</button> <!-- Clear Button Added -->
+
+            <p id="cancelStatus"></p>
+        </div>
+
+        <!-- View Transactions Section -->
+        <div class="section" id="viewTransactions">
+            <h2>View Transactions</h2>
+            
+            <table id="allTransactions" style="width: 100%; border-collapse: collapse;">
+				<thead>
+					<tr>
+						<th>Transaction ID</th>
+						<th>Target</th>
+						<th>Amount</th>
+						<th>Release Time</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- All transactions will be displayed here -->
+				</tbody>
+			</table>
+			
+			<button id="viewAllTransactions" onclick="viewAllTransactions()">View All Transactions</button>
+			<button id="clearView" onclick="clearViewTransactions()">Clear</button> <!-- Clear Button Added -->
+        </div>
+        
+		<div class="section" id="viewChildRequest">
+			<h2>View Child Requests</h2>
+			<div id="studentRequests">
+				<!-- Student requests will be displayed here -->
+				<table id="requestsTable" style="width: 100%; border-collapse: collapse;">
+					<thead>
+						<tr>
+							<th>Request ID</th>
+							<th>Address</th>
+							<th>Amount (Ether)</th>
+							<th>Release Time</th>
+                            <th>Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						<!-- Rows will be added here -->
+					</tbody>
+				</table>
+			</div>
+			<br>
+			<button id="viewRequestsButton" onclick="viewStudentRequests()">View Requests</button>
+			<button id="clearRequests" onclick="clearViewRequests()">Clear</button> <!-- Clear Button Added -->
+		</div>
+    
+    
+
+    </div>
+	<script src="/js/timelockconnect.js"></script>
+    <script>
+        let account;
+        let selectedCurrency = 'wei';
+
+        // 1- Connect to Metamask
+        const connectMetamask = async () => {
+            if (window.ethereum) {
+                try {
+                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+                    account = accounts[0];
+					document.getElementById("accountArea").innerHTML = "<b>Account: </b>" + account;
+                } catch (error) {
+                    console.error(error);
+                    alert("Failed to connect to Metamask.");
+                }
+            } else {
+                alert("Please install Metamask to use this DApp.");
+            }
+        }
+
+        // 2- Connect to Smart Contract
+        const connectToContract = async () => {
+            if (window.ethereum) {
+                try {
+                    await window.ethereum.request({ method: "eth_requestAccounts" });
+                    window.web3 = new Web3(window.ethereum);
+                    window.contract = new window.web3.eth.Contract(contractABI, contractAddress);
+                    const accounts = await window.web3.eth.getAccounts();
+                    account = accounts[0];
+                    document.getElementById("contractArea").innerHTML = "<b>Connected!</b>";
+                } catch (error) {
+                    console.error(error);
+                    alert("Failed to connect to Metamask.");
+                }
+            } else {
+                alert("Please install Metamask to use this DApp.");
+            }
+        }
+
+        const goLogOut = async () => {
+            window.location.href = '/login';
+        }
+
+        // 3- Set Allowance (Queue Transaction)
+        const setAllowance = async () => {
+            const childAddress = document.getElementById("childAddress").value;
+            const amount = document.getElementById("amount").value;
+            const releaseTimeInput = document.getElementById("releaseTime").value;
+			selectedCurrency = document.getElementById("currency").value;
+
+            if (!childAddress || !amount || !releaseTimeInput) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+			// Validate the child's wallet address using Web3.js
+			if (!window.web3.utils.isAddress(childAddress)) {
+        		alert("Invalid Ethereum address. Please enter a valid wallet address.");
+        		return;
+    		}
+
+            const releaseTimeEpoch = Math.floor(new Date(releaseTimeInput).getTime() / 1000);
+
+            let amountInWei;
+
+            // Convert amount to wei based on selected currency
+            if (selectedCurrency === 'ether') {
+                amountInWei = window.web3.utils.toWei(amount, 'ether');
+            } else {
+                amountInWei = amount; // already in wei
+            }
+
+            try {
+                const receipt = await window.contract.methods.queue(childAddress, releaseTimeEpoch, amountInWei).send({ from: account,value: amountInWei });
+                const txId = receipt.events.Queue.returnValues.txId;
+                alert("Allowance has been set successfully! Transaction ID: " + txId);
+            } catch (error) {
+                console.error(error);
+                alert("An error occurred while setting the allowance.");
+            }
+        }
+
+        // 4- Find Transaction (Modify Transaction)
+        const findTransaction = async () => {
+            const txId = document.getElementById("findTxId").value;
+
+            if (!txId) {
+                alert("Please enter the Transaction ID.");
+                return;
+            }
+
+            try {
+                const transaction = await window.contract.methods.queued(txId).call();
+
+                if (transaction.status === "0") {
+                    alert("Transaction not found.");
+                    return;
+                }
+
+				// Make the transaction details table visible
+				document.getElementById("transactionDetails").style.display = 'block';
+
+                let amount;
+                if (selectedCurrency === 'ether') {
+                    amount = window.web3.utils.fromWei(transaction.amount, 'ether');
+                } else {
+                    amount = transaction.amount; // already in wei
+                }
+
+                const releaseTimeDate = new Date(transaction.timestamp * 1000).toLocaleString();
+
+                let status;
+                switch (transaction.status) {
+                    case "1":
+                        status = "Queued";
+                        break;
+                    case "2":
+                        status = "Executed";
+                        break;
+                    case "3":
+                        status = "Cancelled";
+                        break;
+                    default:
+                        status = "Unknown";
+                }
+
+                // Build table rows with transaction details
+				const tableBody = `
+					<tr>
+						<td><b>Transaction ID:</b></td>
+						<td>${txId}</td>
+					</tr>
+					<tr>
+						<td><b>Target:</b></td>
+						<td>${transaction.target}</td>
+					</tr>
+					<tr>
+						<td><b>Amount:</b></td>
+						<td>${amount} ${selectedCurrency}</td>
+					</tr>
+					<tr>
+						<td><b>Release Time:</b></td>
+						<td>${releaseTimeDate} (Epoch: ${transaction.timestamp})</td>
+					</tr>
+					<tr>
+						<td><b>Status:</b></td>
+						<td>${status}</td>
+					</tr>
+				`;
+
+				// Update the table body with the new rows
+				document.querySelector("#transactionDetails tbody").innerHTML = tableBody;
+				
+				// Show the modification section if the transaction is still queued
+				if (transaction.status === "1") {
+					document.getElementById("modifyTransactionDetails").style.display = 'block';
+					document.getElementById("modifyTxId").value = txId;
+					document.getElementById("modifyTarget").value = transaction.target;
+					document.getElementById("modifyAmount").value = selectedCurrency === 'ether' ? window.web3.utils.fromWei(transaction.amount, 'ether') : transaction.amount;
+					document.getElementById("modifyReleaseTime").value = getDateTimeLocal(transaction.timestamp);
+				} else {
+					document.getElementById("modifyTransactionDetails").style.display = 'none';
+				}
+			} catch (error) {
+				console.error(error);
+				alert("Transaction not found.");
+			}
+		}
+
+        // Helper function to convert epoch to datetime-local format
+        const getDateTimeLocal = (epoch) => {
+            const date = new Date(epoch * 1000);
+            const tzOffset = date.getTimezoneOffset() * 60000; // offset in milliseconds
+            const localISOTime = (new Date(date - tzOffset)).toISOString().slice(0,16);
+            return localISOTime;
+        }
+
+        // 5- Modify Transaction
+        const modifyTransaction = async () => {
+            const txId = document.getElementById("modifyTxId").value;
+            const newTarget = document.getElementById("modifyTarget").value;
+            const newAmount = document.getElementById("modifyAmount").value;
+            const newReleaseTimeInput = document.getElementById("modifyReleaseTime").value;
+			//selectedCurrency = document.getElementById("currency").value; 
+            selectedCurrency = document.getElementById("modifyCurrency").value;
+            //const newCurrency = document.getElementById("modifyCurrency").value;
+            if (!txId || !newTarget || !newAmount || !newReleaseTimeInput) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            const newReleaseTimeEpoch = Math.floor(new Date(newReleaseTimeInput).getTime() / 1000);
+
+            let newAmountInWei;
+
+            // Convert amount to wei based on selected currency
+            if (selectedCurrency === 'ether') {
+                newAmountInWei = window.web3.utils.toWei(newAmount, 'ether');
+                alert(newAmountInWei)
+            } else {
+                newAmountInWei = newAmount;
+            }
+
+            try {
+                //await window.contract.methods.modify(txId, newTarget, newReleaseTimeEpoch, newAmountInWei).send({ //from: account, value: newAmountInWei });
+                await window.contract.methods.modify(txId, newTarget, newReleaseTimeEpoch, newAmountInWei).send({ from: account});
+                alert("Transaction has been modified successfully!");
+                // Optionally, refresh the transaction details
+                findTransaction();
+            } catch (error) {
+                console.error(error);
+                alert("An error occurred while modifying the transaction.");
+            }
+        }
+
+        // const modifyTransaction = async () => {
+        //     const txId = document.getElementById("modifyTxId").value;
+        //     const newTarget = document.getElementById("modifyTarget").value;
+        //     const newAmount = document.getElementById("modifyAmount").value;
+        //     const newReleaseTimeInput = document.getElementById("modifyReleaseTime").value;
+        //     selectedCurrency = document.getElementById("modifyCurrency").value;
+
+        //     if (!txId || !newTarget || !newAmount || !newReleaseTimeInput) {
+        //         alert("Please fill in all fields.");
+        //         return;
+        //     }
+
+        //     const newReleaseTimeEpoch = Math.floor(new Date(newReleaseTimeInput).getTime() / 1000);
+
+        //     let newAmountInWei;
+
+        //     // Convert amount to wei based on selected currency
+        //     if (selectedCurrency === 'ether') {
+        //         newAmountInWei = window.web3.utils.toWei(newAmount, 'ether');
+        //     } else {
+        //         newAmountInWei = newAmount;
+        //     }
+
+        //     try {
+        //         // Fetch the current transaction details from the contract to check the existing amount
+        //         const currentTransaction = await window.contract.methods.queued(txId).call();
+        //         const currentAmountInWei = currentTransaction.amount;
+
+        //         let extraAmountRequired = 0;
+
+        //         // Calculate if extra ETH is needed
+        //         if (newAmountInWei > currentAmountInWei) {
+        //             extraAmountRequired = newAmountInWei - currentAmountInWei;
+        //         }
+
+        //         // Send the transaction with extra ETH if needed, or 0 ETH if no increase
+        //         await window.contract.methods.modify(txId, newTarget, newReleaseTimeEpoch, newAmountInWei)
+        //             .send({ from: account, value: extraAmountRequired });
+
+        //         alert("Transaction has been modified successfully!");
+        //         // Optionally, refresh the transaction details
+        //         findTransaction();
+        //     } catch (error) {
+        //         console.error(error);
+        //         alert("An error occurred while modifying the transaction.");
+        //     }
+        // };
+
+
+        // 6- Execute Transaction
+        const executeTransaction = async () => {
+            const txId = document.getElementById("executeTxId").value;
+            const latestTimeInput = document.getElementById("executeLatestTime").value;
+
+            if (!txId || !latestTimeInput) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            const latestTimeEpoch = Math.floor(new Date(latestTimeInput).getTime() / 1000);
+
+            try {
+                await window.contract.methods.execute(txId, latestTimeEpoch).send({ from: account, value: 0 }); // Assuming no ETH needs to be sent
+                alert("Transaction has been executed successfully!");
+            } catch (error) {
+                console.error(error);
+                alert("An error occurred while executing the transaction.");
+            }
+        }
+
+
+
+
+        // 7- Cancel Transaction
+        const cancelTransaction = async () => {
+            const txId = document.getElementById("cancelTxId").value;
+
+            if (!txId) {
+                alert("Please enter the Transaction ID.");
+                return;
+            }
+
+            try {
+                await window.contract.methods.cancel(txId).send({ from: account });
+                document.getElementById("cancelStatus").innerText = "Transaction has been canceled successfully!";
+            } catch (error) {
+                console.error(error);
+                // alert("An error occurred while canceling the transaction.");
+				// Display detailed error message if available
+				let errorMessage = "An error occurred while canceling the transaction.";       
+        		document.getElementById("cancelStatus").innerText = `Error: ${errorMessage}`;
+        		alert(`Error: ${errorMessage}: Transaction is not in the queue!`);
+            }
+        }
+
+        // 8- View All Transactions
+        const viewAllTransactions = async () => {
+			try {
+				const transactions = await window.contract.methods.iterateTransactions().call();
+				
+				const keys = transactions._keys;
+				const targets = transactions.targets;
+				const values = transactions.values;
+				const timestamps = transactions.timestamps;
+				const statuses = transactions.queuedStatuses;
+
+				let html = ''; // Initialize html variable
+
+				keys.forEach((key, index) => {
+					let target = targets[index];
+					let amount = window.web3.utils.fromWei(values[index], 'ether');
+					let releaseTimeDate = new Date(timestamps[index] * 1000).toLocaleString();
+					let status;
+
+					switch (statuses[index]) {
+						case "1":
+							status = "Queued";
+							break;
+						case "2":
+							status = "Executed";
+							break;
+						case "3":
+							status = "Cancelled";
+							break;
+						default:
+							status = "Unknown";
+					}
+
+					// Construct table row
+					html += `<tr>
+								<td>${key}</td>
+								<td>${target}</td>
+								<td>${amount} Ether</td>
+								<td>${releaseTimeDate} (Epoch: ${timestamps[index]})</td>
+								<td>${status}</td>
+							</tr>`;
+				});
+
+				// Update the table body with the new rows
+				document.querySelector("#allTransactions tbody").innerHTML = html;
+			} catch (error) {
+				console.error(error);
+				alert("An error occurred while fetching transactions. Please ensure you have connected to your Metamask wallet and the smart contract.");
+			}
+		};
+
+
+        
+        // View Student Requests
+		const viewStudentRequests = async () => {
+			try {
+				// Call the iterateRequests function from the smart contract
+				const requests = await window.contract.methods.iterateRequests().call();
+				
+				// Debugging: Log the entire requests object to understand its structure
+				console.log("Iterate Requests Output:", requests);
+				
+				// Access the returned arrays via indices
+				const ids = requests[0];
+				const studentAddresses = requests[1]; 
+				const timestamps = requests[2]; 
+				const amounts = requests[3]; 
+                const statuses = requests[4];
+
+				let html = ''; // Start with an empty string for table rows
+
+				for (let i = 0; i < ids.length; i++) {
+					// Convert amount from Wei to Ether for readability
+					const amountInEther = window.web3.utils.fromWei(amounts[i], 'ether');
+					
+					// Convert timestamp to a human-readable date format
+					const releaseDate = new Date(timestamps[i] * 1000).toLocaleString();
+
+                    let status;
+                    if (statuses[i] == true) {
+                        status = "Active";
+                    } else {
+                        status = "Inactive";
+                    }
+					
+					// Build the table row for each request
+					html += `<tr>
+								<td>${ids[i]}</td>
+								<td>${studentAddresses[i]}</td>
+								<td>${amountInEther}</td>
+								<td>${releaseDate} (Epoch: ${timestamps[i]})</td>
+                                <td>${status}</td>
+							</tr>`;
+				}
+
+				// Insert the rows into the table body
+				document.querySelector("#requestsTable tbody").innerHTML = html;
+
+			} catch (error) {
+				console.error("Error fetching student requests:", error);
+				alert("An error occurred while fetching student requests. Please ensure you have connected to your Metamask wallet and the smart contract.");
+			}
+		};
+
+
+       	const clearViewRequests = () => {
+    	// Clear the table body
+    		const tableBody = document.getElementById("requestsTable").getElementsByTagName("tbody")[0];
+    		tableBody.innerHTML = ''; // Clear all rows in the tbody
+		};
+
+
+
+
+
+		// 9- Clear Functions for Each Section
+
+        // Clear Connect Metamask and Contract Section
+        const clearConnectSection = () => {
+            document.getElementById("accountArea").innerHTML = "";
+            document.getElementById("contractArea").innerHTML = "";
+        }
+
+        // Clear Queue Transaction Section
+        const clearQueueTransaction = () => {
+            document.getElementById("childAddress").value = "";
+            document.getElementById("amount").value = "";
+            document.getElementById("currency").value = "wei";
+            document.getElementById("releaseTime").value = "";
+            document.getElementById("releaseTimeEpoch").innerText = "";
+        }
+
+        // Clear Modify Transaction Section
+        const clearModifyTransaction = () => {
+            document.getElementById("findTxId").value = "";
+            document.getElementById("transactionDetails").innerHTML = "";
+            document.getElementById("modifyTransactionDetails").style.display = 'none';
+            // Clear modification fields
+            document.getElementById("modifyTxId").value = "";
+            document.getElementById("modifyTarget").value = "";
+            document.getElementById("modifyAmount").value = "";
+            document.getElementById("modifyCurrency").value = "wei";
+            document.getElementById("modifyReleaseTime").value = "";
+            document.getElementById("modifyReleaseTimeEpoch").innerText = "";
+        }
+
+        // Clear Execute Transaction Section
+        const clearExecuteTransaction = () => {
+            document.getElementById("executeTxId").value = "";
+            document.getElementById("executeLatestTime").value = "";
+            document.getElementById("executeLatestTimeEpoch").innerText = "";
+        }
+
+        // Clear Cancel Transaction Section
+        const clearCancelTransaction = () => {
+            document.getElementById("cancelTxId").value = "";
+            document.getElementById("cancelStatus").innerText = "";
+        }
+
+        // Clear View Transactions Section
+        const clearViewTransactions = () => {
+            document.getElementById("allTransactions").innerHTML = "";
+        }
+
+
+        // Handle Release Time Input for Queue Transaction
+        document.getElementById("releaseTime").addEventListener("change", (event) => {
+            const dateTime = event.target.value;
+            if (dateTime) {
+                const epoch = Math.floor(new Date(dateTime).getTime() / 1000);
+                document.getElementById("releaseTimeEpoch").innerText = `Epoch Timestamp: ${epoch}`;
+            } else {
+                document.getElementById("releaseTimeEpoch").innerText = '';
+            }
+        });
+
+        // Handle Release Time Input for Modify Transaction
+        document.getElementById("modifyReleaseTime").addEventListener("change", (event) => {
+            const dateTime = event.target.value;
+            if (dateTime) {
+                const epoch = Math.floor(new Date(dateTime).getTime() / 1000);
+                document.getElementById("modifyReleaseTimeEpoch").innerText = `Epoch Timestamp: ${epoch}`;
+            } else {
+                document.getElementById("modifyReleaseTimeEpoch").innerText = '';
+            }
+        });
+
+        // Handle Release Time Input for Execute Transaction
+        document.getElementById("executeLatestTime").addEventListener("change", (event) => {
+            const dateTime = event.target.value;
+            if (dateTime) {
+                const epoch = Math.floor(new Date(dateTime).getTime() / 1000);
+                document.getElementById("executeLatestTimeEpoch").innerText = `Epoch Timestamp: ${epoch}`;
+            } else {
+                document.getElementById("executeLatestTimeEpoch").innerText = '';
+            }
+        });
+
+        // Update selected currency when the user changes the currency dropdown
+        document.getElementById("currency").addEventListener("change", (event) => {
+            selectedCurrency = event.target.value;
+        });
+
+        document.getElementById("modifyCurrency").addEventListener("change", (event) => {
+            selectedCurrency = event.target.value;
+        });
+    </script>
+</body>
+</html>

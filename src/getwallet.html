@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent and Child Registry</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+  }
+  
+  .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  h1, h2 {
+      color: #333;
+  }
+  
+  button {
+      padding: 10px 15px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+  }
+  
+  button:hover {
+      background-color: #0056b3;
+  }
+  
+  ul {
+      list-style-type: none;
+      padding: 0;
+  }
+  
+  li {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+  }
+  </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Parent and Child Registry</h1>
+        <button id="fetchParentsBtn">Fetch Parents</button>
+        <button id="fetchChildrenBtn">Fetch Children</button>
+
+        <h2>Registered Parents</h2>
+        <ul id="parentsList"></ul>
+
+        <h2>Registered Children</h2>
+        <ul id="childrenList"></ul>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.6.1/web3.min.js"></script>
+    <script src="js/connect.js"></script>
+    <script>// Connect to MetaMask
+      if (typeof window.ethereum !== 'undefined') {
+          const web3 = new Web3(window.ethereum);
+          let contract;
+      
+          let currentAccount;
+
+const contractAddress = '0x1EecFB0e47Fb3F770A618AaB837a98181eC5D10B'; // Replace with your deployed contract address
+const contractABI =[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "childAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "fullName",
+        "type": "bytes32"
+      }
+    ],
+    "name": "ChildRegistered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "parentAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "fullName",
+        "type": "bytes32"
+      }
+    ],
+    "name": "ParentRegistered",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "children",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "fullName",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint16",
+        "name": "dob",
+        "type": "uint16"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "gradeClass",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "studentID",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "passwordHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "walletAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "parents",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "fullName",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "email",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "phone",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "residentialAddress",
+        "type": "string"
+      },
+      {
+        "internalType": "uint16",
+        "name": "dob",
+        "type": "uint16"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "govID",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "relationship",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "passwordHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "walletAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_fullName",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_email",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_phone",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_residentialAddress",
+        "type": "string"
+      },
+      {
+        "internalType": "uint16",
+        "name": "_dob",
+        "type": "uint16"
+      },
+      {
+        "internalType": "string",
+        "name": "_govID",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_relationship",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_password",
+        "type": "string"
+      }
+    ],
+    "name": "registerParent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_fullName",
+        "type": "string"
+      },
+      {
+        "internalType": "uint16",
+        "name": "_dob",
+        "type": "uint16"
+      },
+      {
+        "internalType": "string",
+        "name": "_gradeClass",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_studentID",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_password",
+        "type": "string"
+      }
+    ],
+    "name": "registerChild",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getParentCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getChildCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "getParent",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "fullName",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "string",
+            "name": "email",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "phone",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "residentialAddress",
+            "type": "string"
+          },
+          {
+            "internalType": "uint16",
+            "name": "dob",
+            "type": "uint16"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "govID",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "relationship",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "passwordHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "walletAddress",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct ParentChildRegistry.Parent",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "getChild",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "fullName",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint16",
+            "name": "dob",
+            "type": "uint16"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "gradeClass",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "studentID",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "passwordHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "walletAddress",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct ParentChildRegistry.Child",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllParents",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "fullName",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "string",
+            "name": "email",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "phone",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "residentialAddress",
+            "type": "string"
+          },
+          {
+            "internalType": "uint16",
+            "name": "dob",
+            "type": "uint16"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "govID",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "relationship",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "passwordHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "walletAddress",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct ParentChildRegistry.Parent[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllChildren",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "fullName",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint16",
+            "name": "dob",
+            "type": "uint16"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "gradeClass",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "studentID",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "passwordHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "walletAddress",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct ParentChildRegistry.Child[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_email",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_password",
+        "type": "string"
+      }
+    ],
+    "name": "loginParent",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_studentID",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_password",
+        "type": "string"
+      }
+    ],
+    "name": "loginChild",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
+
+      
+          window.ethereum.request({ method: 'eth_requestAccounts' })
+              .then(() => {
+                  contract = new web3.eth.Contract(abi, contractAddress);
+                  console.log('Connected to contract:', contractAddress);
+              })
+              .catch(err => console.error('Error connecting to MetaMask:', err));
+      }
+      
+      // Fetch registered parents
+      async function fetchParents() {
+          try {
+              const parentCount = await contract.methods.getParentCount().call();
+              const parentsList = document.getElementById('parentsList');
+              parentsList.innerHTML = ''; // Clear existing list
+      
+              for (let i = 0; i < parentCount; i++) {
+                  const parent = await contract.methods.getParent(i).call();
+                  const listItem = document.createElement('li');
+                  listItem.textContent = `Name: ${web3.utils.toUtf8(parent.fullName)}, Email: ${parent.email}, Phone: ${parent.phone}`;
+                  parentsList.appendChild(listItem);
+              }
+          } catch (err) {
+              console.error('Error fetching parents:', err);
+          }
+      }
+      
+      // Fetch registered children
+      async function fetchChildren() {
+          try {
+              const childCount = await contract.methods.getChildCount().call();
+              const childrenList = document.getElementById('childrenList');
+              childrenList.innerHTML = ''; // Clear existing list
+      
+              for (let i = 0; i < childCount; i++) {
+                  const child = await contract.methods.getChild(i).call();
+                  const listItem = document.createElement('li');
+                  listItem.textContent = `Name: ${web3.utils.toUtf8(child.fullName)}, Student ID: ${web3.utils.toUtf8(child.studentID)}, Grade/Class: ${web3.utils.toUtf8(child.gradeClass)}`;
+                  childrenList.appendChild(listItem);
+              }
+          } catch (err) {
+              console.error('Error fetching children:', err);
+          }
+      }
+
+      window.onload = function() {
+    const walletAddress = localStorage.getItem('walletAddress');
+
+
+    console.log("Wallet Address:", walletAddress);
+
+    // Use walletAddress and index as needed
+};
+      
+      // Add event listeners to buttons
+      document.getElementById('fetchParentsBtn').addEventListener('click', fetchParents);
+      document.getElementById('fetchChildrenBtn').addEventListener('click', fetchChildren);
+      </script>
+</body>
+</html>

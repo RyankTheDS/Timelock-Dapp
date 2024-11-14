@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent & Child Login</title>
+    <link rel="stylesheet" href="css/styleLogin.css">
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+    <style>
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px; /* Add space between the buttons */
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    
+        .home-button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100px; /* Set a fixed width */
+        }
+    
+        .home-button:hover {
+            background-color: #0056b3;
+        }
+
+        .register-link {
+            display: block;
+            text-align: center;
+            margin-top: 10px; /* Add space above the link */
+            color: #007bff;
+            text-decoration: none; /* Remove underline */
+            font-weight: bold; /* Make the link bold */
+        }
+
+        .register-link:hover {
+            text-decoration: underline; /* Underline on hover */
+        }
+    </style>
+
+</head>
+<body>
+
+
+<div class="container">
+    <div class="tabs">
+        <div id="tabParent" class="tab active" onclick="showTab('parent')">Parent/Guardian</div>
+        <div id="tabChild" class="tab" onclick="showTab('child')">Child</div>
+    </div>
+    
+    <div id="formParent" class="form-container active">
+        <div class="button-container">
+            <button class="home-button" onclick="location.href='/'"">Home</button>
+            <button id="connectParentMetaMask" onclick="connectMetaMask()">Connect MetaMask</button>
+            <div class="account-display" id="parentAccountDisplay">No account connected</div>
+        </div>
+    
+        <h3>Parent/Guardian Login</h3>
+        <input type="email" id="loginParentEmail" placeholder="Email Address" required>
+        <input type="password" id="loginParentPassword" placeholder="Password" required>
+        <div id="parentLoginResult" class="error"></div>
+        <button onclick="parentLogin()">Login as Parent/Guardian</button>
+    </div>
+
+    <div id="formChild" class="form-container">
+        <div class="button-container">
+            <button id="connectParentMetaMask" onclick="connectMetaMask()">Connect MetaMask</button>
+            <div class="account-display" id="childAccountDisplay">No account connected</div>
+        </div>
+    
+        <h3>Child Login</h3>
+        <input type="text" id="loginChildStudentID" placeholder="Student ID" required>
+        <input type="password" id="loginChildPassword" placeholder="Password" required>
+        <div id="childLoginResult" class="error"></div>
+        <button onclick="childLogin()">Login as Child</button>
+    </div>
+    <a href="register" class="register-link">Register</a> <!-- Register Link -->
+</div>
+<div class="container">
+    <!-- Existing content... -->
+
+    <div class="count-container">
+        <button onclick="getCounts()">Get Counts</button>
+        <div id="countsDisplay" class="counts"></div>
+    </div>
+</div>
+
+<script src="/js/connect.js"></script>
+<script>
+
+    async function init() {
+        if (typeof window.ethereum !== 'undefined') {
+            web3 = new Web3(window.ethereum);
+            await ethereum.request({ method: 'eth_requestAccounts' });
+            contract = new web3.eth.Contract(contractABI, contractAddress);
+            console.log('MetaMask connected');
+        } else {
+            alert('Please install MetaMask to use this feature.');
+        }
+    }
+    async function connectMetaMask() {
+    if (typeof window.ethereum !== 'undefined') {
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            currentAccount = accounts[0];
+            document.getElementById('parentAccountDisplay').innerText = `Connected: ${currentAccount}`;
+            document.getElementById('childAccountDisplay').innerText = `Connected: ${currentAccount}`;
+            
+        } catch (error) {
+            console.error("MetaMask connection failed", error);
+            alert('Could not connect to MetaMask. Please try again.');
+        }
+    } else {
+        alert('MetaMask is not installed. Please install it to use this feature.');
+    }
+}
+    function showTab(userType) {
+        document.getElementById('tabParent').classList.remove('active');
+        document.getElementById('tabChild').classList.remove('active');
+        document.getElementById('formParent').classList.remove('active');
+        document.getElementById('formChild').classList.remove('active');
+
+        document.getElementById('parentLoginResult').innerHTML = '';
+        document.getElementById('childLoginResult').innerHTML = '';
+
+        if (userType === 'parent') {
+            document.getElementById('tabParent').classList.add('active');
+            document.getElementById('formParent').classList.add('active');
+        } else {
+            document.getElementById('tabChild').classList.add('active');
+            document.getElementById('formChild').classList.add('active');
+        }
+    }
+
+    async function parentLogin() {
+        const email = document.getElementById('loginParentEmail').value;
+        const password = document.getElementById('loginParentPassword').value;
+
+        if (!currentAccount) {
+            document.getElementById('parentLoginResult').innerText = "Please connect MetaMask first.";
+            return;
+        }
+
+        const web3 = new Web3(window.ethereum);
+
+        try {
+            const parentCount = await contract.methods.getParentCount().call();
+            let isLoggedIn = false;
+
+            for (let index = 0; index < parentCount; index++) {
+                const parent = await contract.methods.getParent(index).call();
+                if (parent.email === email && parent.passwordHash === web3.utils.keccak256(password)) {
+                    isLoggedIn = true;
+                    break;
+                }
+            }
+
+            if (isLoggedIn) {
+                document.getElementById('parentLoginResult').innerText = "Login successful!";
+                window.location.href = "parent"; // Redirect to home.html
+            } else {
+                document.getElementById('parentLoginResult').innerText = "Invalid credentials.";
+            }
+        } catch (error) {
+            console.error(error);
+            document.getElementById('parentLoginResult').innerText = "Login failed.";
+        }
+    }
+
+    async function childLogin() {
+    const studentIDInput = document.getElementById('loginChildStudentID').value.trim();
+    const password = document.getElementById('loginChildPassword').value.trim();
+
+    if (!currentAccount) {
+        document.getElementById('childLoginResult').innerText = "Please connect MetaMask first.";
+        return;
+    }
+
+    const web3 = new Web3(window.ethereum);
+
+    try {
+        const childCount = await contract.methods.getChildCount().call();
+        let isLoggedIn = false;
+
+        for (let index = 0; index < childCount; index++) {
+            const child = await contract.methods.getChild(index).call();
+            console.log("Child retrieved:", child); // Log the child details
+
+            // Convert child.studentID from bytes32 to string
+            const retrievedStudentID = web3.utils.hexToAscii(child.studentID).replace(/\0/g, ''); // Convert bytes32 to string
+
+            // Log both hashes for debugging
+            const hashedInputPassword = web3.utils.keccak256(password);
+            console.log("Stored password hash:", child.passwordHash);
+            console.log("Hashed input password:", hashedInputPassword);
+
+            // Compare the converted student ID and passwordHash
+            if (retrievedStudentID === studentIDInput && child.passwordHash === hashedInputPassword) {
+                isLoggedIn = true;
+                let walletaddressNext=child.walletaddress;
+                let nextIndex=index;
+                break;
+            }
+        }
+
+        if (isLoggedIn) {
+            document.getElementById('childLoginResult').innerText = "Login successful!";
+            window.location.href = "student"; // Redirect to home.html
+            localStorage.setItem('walletAddress', currentAccount);
+        } else {
+            document.getElementById('childLoginResult').innerText = "Invalid credentials.";
+        }
+    } catch (error) {
+        console.error(error);
+        document.getElementById('childLoginResult').innerText = "Login failed.";
+    }
+}
+    async function getCounts() {
+    try {
+        const parentCount = await contract.methods.getParentCount().call();
+        const childCount = await contract.methods.getChildCount().call();
+        document.getElementById('countsDisplay').innerText = `Registered Parents: ${parentCount}, Registered Children: ${childCount}`;
+    } catch (error) {
+        console.error("Error fetching counts:", error);
+        document.getElementById('countsDisplay').innerText = "Error fetching counts.";
+    }
+}
+
+    window.onload = init;
+</script>
+
+</body>
+</html>

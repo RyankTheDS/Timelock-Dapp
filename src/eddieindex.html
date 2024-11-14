@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registered Parents and Children</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+
+<div class="container">
+    <h2>User Profile</h2>
+    <div class="user-info" id="user-info">
+        <!-- User information will be populated here -->
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+<script src="/js/connect.js"></script>
+<script>
+ 
+    async function initContract() {
+        if (typeof window.ethereum !== 'undefined') {
+            const web3 = new Web3(window.ethereum);
+            contract = new web3.eth.Contract(contractABI, contractAddress);
+            console.log('MetaMask detected');
+            await loadData();
+
+               const walletAddressParent = accounts[0]; // Example for parent
+                const walletAddressChild = accounts[0];  // Example for child
+
+                displayParentData(walletAddressParent);
+                displayChildData(walletAddressChild);
+                loginParent(walletAddressParent);
+        } else {
+            alert('MetaMask is not installed. Please install it to use this feature.');
+        }
+    }
+
+
+    window.onload = initContract;
+
+
+    window.addEventListener('load', async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                web3 = new Web3(window.ethereum);
+                await ethereum.request({ method: 'eth_requestAccounts' });
+                const accounts = await web3.eth.getAccounts();
+                console.log('Connected account:', accounts[0]);
+                contract = new web3.eth.Contract(contractABI, contractAddress);
+    
+                const userInfoDiv = document.getElementById('user-info');
+    
+                // Fetch parent or child data
+                try {
+    const parentData = await contract.methods.getParent(accounts[0]).call();
+    const childData = await contract.methods.getChild(accounts[0]).call();
+    if (parentData && parentData.walletAddress) { // Check if parent data exists
+        userInfoDiv.innerHTML = `
+            <p><span class="label">Welcome, Parent:</span> ${web3.utils.hexToUtf8(parentData.fullName)}</p>
+            <p><span class="label">Email:</span> ${parentData.email}</p>
+            <p><span class="label">Phone:</span> ${parentData.phone}</p>
+            <p><span class="label">Address:</span> ${parentData.residentialAddress}</p>
+            <p><span class="label">Date of Birth:</span> ${parentData.dob}</p>
+            <p><span class="label">Government ID:</span> ${web3.utils.hexToUtf8(parentData.govID)}</p>
+            <p><span class="label">Relationship:</span> ${web3.utils.hexToUtf8(parentData.relationship)}</p>
+            <p><span class="label">Wallet Address:</span> ${parentData.walletAddress}</p>
+            <p><span class="label">password:</span> ${parentData.passwordHash}</p>
+            <p><span class="label">Welcome, Child:</span> ${web3.utils.hexToUtf8(childData.fullName)}</p>
+                    <p><span class="label">Date of Birth:</span> ${childData.dob}</p>
+                    <p><span class="label">Grade/Class:</span> ${web3.utils.hexToUtf8(childData.gradeClass)}</p>
+                    <p><span class="label">Student ID:</span> ${web3.utils.hexToUtf8(childData.studentID)}</p>
+                        <p><span class="label">password:</span> ${childData.passwordHash}</p>
+                          <p><span class="label">Wallet Address:</span> ${childData.walletAddress}</p> <!-- Added this line -->
+        `;
+    } else {
+        console.log("No parent data found, checking for child...");
+
+        try {
+          
+
+            if (childData && childData.walletAddress) { // Check if child data exists
+                userInfoDiv.innerHTML = `
+                    <p><span class="label">Welcome, Child:</span> ${web3.utils.hexToUtf8(childData.fullName)}</p>
+                    <p><span class="label">Date of Birth:</span> ${childData.dob}</p>
+                    <p><span class="label">Grade/Class:</span> ${web3.utils.hexToUtf8(childData.gradeClass)}</p>
+                    <p><span class="label">Student ID:</span> ${web3.utils.hexToUtf8(childData.studentID)}</p>
+                `;
+            } else {
+                console.log("No child data found.");
+                userInfoDiv.innerHTML = '<p class="no-data">No user information found.</p>';
+            }
+        } catch (error) {
+            console.error("Error fetching child data:", error);
+            userInfoDiv.innerHTML = '<p class="no-data">No user information found.</p>';
+        }
+    }
+} catch (error) {
+    console.error("Error fetching parent data:", error);
+    userInfoDiv.innerHTML = '<p class="no-data">No user information found.</p>';
+}
+            } else {
+                alert('Please install MetaMask to use this feature.');
+            }
+        });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Dashboard with Claim Funds</title>
+    <link rel="stylesheet" href="css/indexStyle.css">
+</head>
+<body>
+    <h1><i>UltraZone</i> Parental Allowance DApp</h1>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-left">Parent</div>
+        <div class="nav-links">
+            <a href="parent#queueTransaction">Schedule Transaction</a>
+            <a href="parent#modifyTransaction">Modify Transaction</a>
+            <a href="parent#cancelTransaction">Cancel Transaction</a>
+            <a href="parent#viewTransactions">View Transactions</a>
+            <a href="parent#viewChildRequest">View Child Requests</a>
+            <a href="#">Transaction Analytics</a>
+        </div>
+    </nav>
+
+    <div class="flex-container">
+        <div class="container">
+            <h1>Blockchain Dashboard</h1>
+            <button id="loginButton" class="main-btn">Connect to MetaMask</button>
+
+            <div id="accountInfo" class="box hidden">
+                <h2>Account Details</h2>
+                <p><strong>Address:</strong> <span id="userAddress"></span></p>
+                <p><strong>Balance:</strong> <span id="balance"></span></p>
+            </div>
+
+            <div id="scheduleSection" class="box hidden">
+                <h2>Schedule Transfer</h2>
+                <label for="scheduleRecipientAddress">Recipient Address:</label>
+                <input type="text" id="scheduleRecipientAddress" placeholder="0x...">
+                
+                <label for="scheduleAmount">Amount (ETH):</label>
+                <input type="number" id="scheduleAmount" placeholder="0.1" step="0.01" min="0">
+                
+                <label for="scheduleUnlockTime">Unlock Time (Date and Time):</label>
+                <input type="datetime-local" id="scheduleUnlockTime">
+                
+                <button id="scheduleButton" class="main-btn">Schedule Transfer</button>
+                <p id="scheduleStatus"></p>
+            </div>
+
+            <div id="filterSection" class="box hidden">
+                <h2>Filter Transfers</h2>
+                <label for="filterStatus">Status:</label>
+                <select id="filterStatus">
+                    <option value="all">All</option>    
+                    <option value="queued">Queued</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            
+                <label for="filterSender">Sender Address:</label>
+                <input type="text" id="filterSender" placeholder="Sender Address (0x...)">
+            
+                <label for="filterRecipient">Recipient Address:</label>
+                <input type="text" id="filterRecipient" placeholder="Recipient Address (0x...)">
+            
+                <button id="applyFilterButton" class="main-btn">Apply Filter</button>
+            </div>
+
+            <div id="claimFundsSection" class="box hidden">
+                <h2>Transaction Queue</h2>
+                <div class="table-wrapper">
+                    <table id="claimFundsTable">
+                        <thead>
+                            <tr>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Release Time</th>
+                                <th>Amount (ETH)</th>
+                                <th>Status</th>
+                                <th>Modify</th>
+                                <th>Cancel</th>
+                            </tr>
+                        </thead>
+                        <tbody id="claimFundsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div id="currentTimeSection" class="box">
+            <p>Current Time (Unix Timestamp): <span id="currentTime"></span></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="js/app2.js"></script>
+</body>
+</html>
