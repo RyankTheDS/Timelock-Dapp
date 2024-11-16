@@ -1,3 +1,4 @@
+# Timelock dApp for Parental Allowance
 i) SMART CONTRACTS
 - 3 contracts in total
 - 2 contracts in 'contracts' folder to be deployed locally
